@@ -1,5 +1,20 @@
 {
-  "android": {
-    "package": "com.anonymous.exporninfinitequerypoc"
+  "expo": {
+    "name": "expo-rn-infinite-query-poc",
+    "slug": "expo-rn-infinite-query-poc",
+    "android": {
+      "package": "com.anonymous.exporninfinitequerypoc"
+    },
+    "plugins": [
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "kotlinVersion": "1.9.25"
+          }
+        }
+      ],
+      "expo-asset"
+    ]
   }
 }

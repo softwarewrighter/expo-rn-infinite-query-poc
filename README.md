@@ -3,22 +3,40 @@
 Shares the same API contract as the web app.
 
 ## Prereqs
-- Node ≥ 18
+- Node >= 18
 - Expo CLI (`npm i -g expo` or use `npx expo`)
 - iOS Simulator / Android Emulator or Expo Go on a device
 
 ## Configure API base
-By default, it points to `http://localhost:5174`. If using a **physical device**, change `API_BASE` in `app/App.js` to your machine's LAN IP (e.g., `http://192.168.1.50:5174`).
+By default, it points to `http://192.168.1.152:5174`. If using a **physical device**, change `API_BASE` in `app/App.js` to your machine's LAN IP (e.g., `http://192.168.1.50:5174`).
 
 ## Quick Start
 
 ```bash
-# Install dependencies
+# 1. Install dependencies
 ./scripts/install.sh
 
-# Start Expo dev server with QR code
+# 2. Start the mock API server (in a separate terminal)
+node server.js
+
+# 3. Start Expo dev server
 ./scripts/start.sh
+
+# 4. Build and run on Android emulator
+./scripts/build-android.sh
 ```
+
+## Running the Mock Server
+
+The app requires a backend API server. A mock server is included:
+
+```bash
+node server.js
+```
+
+This starts a server on port 5174 with the following endpoints:
+- `GET /api/sections?page=0` - Get paginated list of sections
+- `GET /api/section?kind=hero&index=0` - Get individual section details
 
 ## Scripts
 
@@ -34,21 +52,34 @@ By default, it points to `http://localhost:5174`. If using a **physical device**
 ## Testing on Your Phone
 
 1. Install [Expo Go](https://expo.dev/client) on your phone
-2. Run `./scripts/start.sh` (or `start-lan.sh` for same WiFi network)
-3. Scan the QR code with Expo Go
+2. Run `node server.js` to start the mock API
+3. Run `./scripts/start.sh` (or `start-lan.sh` for same WiFi network)
+4. Scan the QR code with Expo Go
 
-**Note:** Update `API_BASE` in `app/App.js:5` to your computer's LAN IP (e.g., `192.168.x.x:5174`) for the API to work on your phone.
+**Note:** Update `API_BASE` in `app/App.js` to your computer's LAN IP (e.g., `192.168.x.x:5174`) for the API to work on your phone.
 
 ## Run (Alternative)
 
 ```bash
 npm i
+node server.js &     # Start mock server in background
 npx expo start
 ```
 
 Then press `i` (iOS simulator) or `a` (Android emulator), or scan the QR code with Expo Go on your device.
 
+## Features
+
+- **Infinite Scroll**: `FlatList` + `onEndReached` for paging with `useInfiniteQuery`
+- **Per-item Data Fetching**: Each row uses `useQuery(['section', kind, index])` to fetch content
+- **Viewport Animations**: Components animate when they scroll into view using `react-native-reanimated`
+  - Hero cards: Slide reveal images with pulsing glow border
+  - Quote cards: Typewriter text effect
+  - Card items: Tilt animation on entry
+  - All items: Fade in, scale up, slide up animations
+  - Animated badges with counting effect
+
 ## Notes
-- Uses `FlatList` + `onEndReached` for paging (`useInfiniteQuery`).
-- Each row uses `useQuery(['section', kind, index])` to fetch content.
+- Uses `FlatList`'s `onViewableItemsChanged` to track which items are visible
+- Animations trigger only once when items first become visible
 - To add offline cache persistence, wire `@tanstack/react-query-persist-client` with AsyncStorage.
