@@ -1,5 +1,6 @@
 import React, { useCallback, useState, useRef } from "react";
-import { SafeAreaView, View, Text, FlatList, Image, StyleSheet, Dimensions } from "react-native";
+import { SafeAreaView, View, Text, FlatList, Image, StyleSheet, Dimensions, Modal, TouchableOpacity, Linking, Pressable } from "react-native";
+import buildInfo from "./buildInfo.json";
 import { QueryClient, QueryClientProvider, useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { registerRootComponent } from "expo";
 import Animated, {
@@ -16,7 +17,59 @@ import Animated, {
 import { Video as ExpoVideo, ResizeMode } from "expo-av";
 
 const API_BASE = "http://192.168.1.152:5174";
+const GITHUB_URL = "https://github.com/softwarewrighter/expo-rn-infinite-query-poc";
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
+
+function AboutModal({ visible, onClose }) {
+  const openGitHub = () => Linking.openURL(GITHUB_URL);
+
+  return (
+    <Modal
+      animationType="fade"
+      transparent={true}
+      visible={visible}
+      onRequestClose={onClose}
+    >
+      <Pressable style={styles.modalOverlay} onPress={onClose}>
+        <Pressable style={styles.modalContent} onPress={e => e.stopPropagation()}>
+          <Text style={styles.modalTitle}>About</Text>
+
+          <View style={styles.modalSection}>
+            <Text style={styles.modalLabel}>Expo RN Infinite Query POC</Text>
+            <Text style={styles.modalText}>
+              Infinite scroll demo with TanStack Query and viewport-triggered animations.
+            </Text>
+          </View>
+
+          <View style={styles.modalSection}>
+            <Text style={styles.modalLabel}>Copyright</Text>
+            <Text style={styles.modalText}>© 2025 Michael A Wright</Text>
+          </View>
+
+          <View style={styles.modalSection}>
+            <Text style={styles.modalLabel}>License</Text>
+            <Text style={styles.modalText}>MIT License</Text>
+          </View>
+
+          <View style={styles.modalSection}>
+            <Text style={styles.modalLabel}>Build Info</Text>
+            <Text style={styles.modalMono}>{buildInfo.timestamp}</Text>
+            <Text style={styles.modalMono}>Host: {buildInfo.host}</Text>
+            <Text style={styles.modalMono}>SHA: {buildInfo.gitShaShort}</Text>
+          </View>
+
+          <TouchableOpacity style={styles.linkButton} onPress={openGitHub}>
+            <Text style={styles.linkButtonText}>View on GitHub</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+            <Text style={styles.closeButtonText}>Close</Text>
+          </TouchableOpacity>
+        </Pressable>
+      </Pressable>
+    </Modal>
+  );
+}
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 2, staleTime: 30_000, gcTime: 5*60_000, refetchOnWindowFocus: false } }
@@ -407,14 +460,29 @@ function Feed(){
 }
 
 function App(){
+  const [aboutVisible, setAboutVisible] = useState(false);
+
   return (
     <QueryClientProvider client={queryClient}>
       <SafeAreaView style={styles.root}>
         <View style={styles.header}>
-          <Text style={styles.h1}>Infinite • TanStack Query • RN</Text>
-          <Text style={styles.muted}>FlatList + useInfiniteQuery + Animations</Text>
+          <View style={styles.headerRow}>
+            <View style={styles.headerText}>
+              <Text style={styles.h1}>Infinite • TanStack Query • RN</Text>
+              <Text style={styles.muted}>FlatList + useInfiniteQuery + Animations</Text>
+            </View>
+            <TouchableOpacity
+              style={styles.infoButton}
+              onPress={() => setAboutVisible(true)}
+              accessibilityLabel="About"
+              accessibilityRole="button"
+            >
+              <Text style={styles.infoButtonText}>i</Text>
+            </TouchableOpacity>
+          </View>
         </View>
         <Feed />
+        <AboutModal visible={aboutVisible} onClose={() => setAboutVisible(false)} />
       </SafeAreaView>
     </QueryClientProvider>
   );
@@ -425,6 +493,10 @@ export default registerRootComponent(App);
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: "#0f172a" },
   header: { paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: "#1f2937" },
+  headerRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  headerText: { flex: 1 },
+  infoButton: { width: 28, height: 28, borderRadius: 14, backgroundColor: "#1e3a5f", alignItems: "center", justifyContent: "center", marginLeft: 12 },
+  infoButtonText: { color: "#0ea5e9", fontSize: 16, fontWeight: "700", fontStyle: "italic" },
   h1: { color: "#e2e8f0", fontSize: 18, fontWeight: "600" },
   h2: { color: "#e2e8f0", fontSize: 20, fontWeight: "700", marginTop: 8 },
   h3: { color: "#e2e8f0", fontSize: 16, fontWeight: "700", marginTop: 6 },
@@ -434,4 +506,15 @@ const styles = StyleSheet.create({
   badgeText: { color: "black", fontWeight: "700", fontSize: 12 },
   playingIndicator: { backgroundColor: "#ef4444", borderRadius: 4, paddingHorizontal: 8, paddingVertical: 2, marginLeft: 8 },
   playingText: { color: "white", fontWeight: "700", fontSize: 10 },
+  modalOverlay: { flex: 1, backgroundColor: "rgba(0, 0, 0, 0.7)", justifyContent: "center", alignItems: "center" },
+  modalContent: { backgroundColor: "#1e293b", borderRadius: 16, padding: 24, width: SCREEN_WIDTH - 48, maxWidth: 400, borderWidth: 1, borderColor: "#334155" },
+  modalTitle: { color: "#e2e8f0", fontSize: 24, fontWeight: "700", marginBottom: 20, textAlign: "center" },
+  modalSection: { marginBottom: 16 },
+  modalLabel: { color: "#0ea5e9", fontSize: 12, fontWeight: "600", textTransform: "uppercase", marginBottom: 4 },
+  modalText: { color: "#e2e8f0", fontSize: 14, lineHeight: 20 },
+  modalMono: { color: "#94a3b8", fontSize: 12, fontFamily: "monospace" },
+  linkButton: { backgroundColor: "#0ea5e9", borderRadius: 8, paddingVertical: 12, paddingHorizontal: 16, marginTop: 8, alignItems: "center" },
+  linkButtonText: { color: "#0f172a", fontWeight: "700", fontSize: 14 },
+  closeButton: { backgroundColor: "#334155", borderRadius: 8, paddingVertical: 12, paddingHorizontal: 16, marginTop: 12, alignItems: "center" },
+  closeButtonText: { color: "#e2e8f0", fontWeight: "600", fontSize: 14 },
 });
