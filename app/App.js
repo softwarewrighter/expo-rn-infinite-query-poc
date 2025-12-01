@@ -1,5 +1,5 @@
 import React, { useCallback, useState, useRef } from "react";
-import { SafeAreaView, View, Text, FlatList, Image, StyleSheet, Dimensions, Modal, TouchableOpacity, Linking, Pressable } from "react-native";
+import { SafeAreaView, View, Text, FlatList, Image, StyleSheet, Dimensions, Modal, TouchableOpacity, Linking } from "react-native";
 import buildInfo from "./buildInfo.json";
 import { QueryClient, QueryClientProvider, useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { registerRootComponent } from "expo";
@@ -30,8 +30,16 @@ function AboutModal({ visible, onClose }) {
       visible={visible}
       onRequestClose={onClose}
     >
-      <Pressable style={styles.modalOverlay} onPress={onClose}>
-        <Pressable style={styles.modalContent} onPress={e => e.stopPropagation()}>
+      <TouchableOpacity
+        style={styles.modalOverlay}
+        activeOpacity={1}
+        onPress={onClose}
+      >
+        <TouchableOpacity
+          style={styles.modalContent}
+          activeOpacity={1}
+          onPress={() => {}}
+        >
           <Text style={styles.modalTitle}>About</Text>
 
           <View style={styles.modalSection}>
@@ -65,8 +73,8 @@ function AboutModal({ visible, onClose }) {
           <TouchableOpacity style={styles.closeButton} onPress={onClose}>
             <Text style={styles.closeButtonText}>Close</Text>
           </TouchableOpacity>
-        </Pressable>
-      </Pressable>
+        </TouchableOpacity>
+      </TouchableOpacity>
     </Modal>
   );
 }
