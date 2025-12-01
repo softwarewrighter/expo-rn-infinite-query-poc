@@ -4,7 +4,7 @@ Shares the same API contract as the web app.
 
 ![App Screenshot](images/screenshot.png?ts=1764552868000)
 
-*Screenshot showing the infinite scroll feed with animated Hero, Quote, and Card components. Each component animates into view as you scroll - images slide in from the left, quotes type out character-by-character, badges pop in with counting animations, and hero cards pulse with a cyan glow effect.*
+*Screenshot showing the infinite scroll feed with animated Hero, Quote, Card, and Video components. Each component animates into view as you scroll - images slide in from the left, quotes type out character-by-character, badges pop in with counting animations, hero cards pulse with a cyan glow effect, and video components auto-play with a pulsing red border.*
 
 ## Prereqs
 - Node >= 18
