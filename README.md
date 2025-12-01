@@ -2,7 +2,7 @@
 
 Shares the same API contract as the web app.
 
-![App Screenshot](images/screenshot.png)
+![App Screenshot](images/screenshot.png?ts=1764552868000)
 
 *Screenshot showing the infinite scroll feed with animated Hero, Quote, and Card components. Each component animates into view as you scroll - images slide in from the left, quotes type out character-by-character, badges pop in with counting animations, and hero cards pulse with a cyan glow effect.*
 
@@ -77,13 +77,28 @@ Then press `i` (iOS simulator) or `a` (Android emulator), or scan the QR code wi
 - **Infinite Scroll**: `FlatList` + `onEndReached` for paging with `useInfiniteQuery`
 - **Per-item Data Fetching**: Each row uses `useQuery(['section', kind, index])` to fetch content
 - **Viewport Animations**: Components animate when they scroll into view using `react-native-reanimated`
-  - Hero cards: Slide reveal images with pulsing glow border
+  - Hero cards: Slide reveal images with pulsing cyan glow border
   - Quote cards: Typewriter text effect
   - Card items: Tilt animation on entry
+  - Video cards: Auto-playing videos with pulsing red border
   - All items: Fade in, scale up, slide up animations
   - Animated badges with counting effect
+- **Auto-playing Videos**: Video components using `expo-av` that:
+  - Auto-play when scrolled into view
+  - Auto-pause when scrolled out of view
+  - Loop continuously
+  - Display native video controls
+
+## Component Types
+
+| Type | Description |
+|------|-------------|
+| Hero | Large image with slide reveal animation, pulsing cyan glow |
+| Card | Compact image + text with tilt animation |
+| Quote | Italicized text with typewriter effect |
+| Video | Auto-playing video with red glow border |
 
 ## Notes
 - Uses `FlatList`'s `onViewableItemsChanged` to track which items are visible
-- Animations trigger only once when items first become visible
+- Animations trigger only once when items first become visible (except videos which play/pause based on visibility)
 - To add offline cache persistence, wire `@tanstack/react-query-persist-client` with AsyncStorage.

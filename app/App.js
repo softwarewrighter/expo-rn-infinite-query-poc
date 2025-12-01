@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useState, useRef } from "react";
 import { SafeAreaView, View, Text, FlatList, Image, StyleSheet, Dimensions } from "react-native";
 import { QueryClient, QueryClientProvider, useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { registerRootComponent } from "expo";
@@ -13,6 +13,7 @@ import Animated, {
   Extrapolate,
   runOnJS
 } from "react-native-reanimated";
+import { Video as ExpoVideo, ResizeMode } from "expo-av";
 
 const API_BASE = "http://192.168.1.152:5174";
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
@@ -259,6 +260,77 @@ function Card({ data, index, isVisible }){
   );
 }
 
+// Video component with expo-av - autoplays when visible
+function Video({ data, index, isVisible }){
+  const videoRef = useRef(null);
+  const [status, setStatus] = useState({});
+  const scale = useSharedValue(0.95);
+  const borderGlow = useSharedValue(0);
+
+  React.useEffect(() => {
+    if (isVisible) {
+      // Start playing when visible
+      videoRef.current?.playAsync();
+      scale.value = withSpring(1, { damping: 15, stiffness: 100 });
+      borderGlow.value = withRepeat(
+        withSequence(
+          withTiming(1, { duration: 1500 }),
+          withTiming(0.3, { duration: 1500 })
+        ),
+        -1,
+        true
+      );
+    } else {
+      // Pause when not visible
+      videoRef.current?.pauseAsync();
+      borderGlow.value = withTiming(0.3, { duration: 300 });
+    }
+  }, [isVisible]);
+
+  const containerStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+    borderColor: `rgba(239, 68, 68, ${interpolate(borderGlow.value, [0.3, 1], [0.3, 0.8])})`,
+    borderWidth: 2,
+  }));
+
+  if (!data?.videoUrl) {
+    return (
+      <View style={styles.section}>
+        <Text style={{ color: "#ffb4b4", padding: 16 }}>No video URL</Text>
+      </View>
+    );
+  }
+
+  return (
+    <Animated.View style={[styles.section, containerStyle]}>
+      <View style={{ backgroundColor: "#000" }}>
+        <ExpoVideo
+          ref={videoRef}
+          source={{ uri: data.videoUrl }}
+          style={{ width: SCREEN_WIDTH - 28, height: 200 }}
+          resizeMode={ResizeMode.CONTAIN}
+          isLooping
+          onPlaybackStatusUpdate={setStatus}
+          useNativeControls
+        />
+      </View>
+      <View style={{ padding: 12 }}>
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <AnimatedBadge index={index} isVisible={isVisible} />
+          <Text style={{ color: "#ef4444", marginLeft: 8, fontWeight: "600" }}>VIDEO</Text>
+          {status.isPlaying && (
+            <View style={styles.playingIndicator}>
+              <Text style={styles.playingText}>▶ PLAYING</Text>
+            </View>
+          )}
+        </View>
+        <Text style={styles.h2}>{data?.title || "Loading…"}</Text>
+        <Text style={styles.muted}>{data?.text || "Fetching…"}</Text>
+      </View>
+    </Animated.View>
+  );
+}
+
 function Row({ item, isVisible }){
   const { kind, index } = item;
   const { data, isLoading, isFetching, error } = useQuery({
@@ -281,6 +353,7 @@ function Row({ item, isVisible }){
         {kind === "hero" && <Hero data={data} index={index} isVisible={isVisible} />}
         {kind === "quote" && <Quote data={data} index={index} isVisible={isVisible} />}
         {kind === "card" && <Card data={data} index={index} isVisible={isVisible} />}
+        {kind === "video" && <Video data={data} index={index} isVisible={isVisible} />}
       </View>
     </AnimatedCard>
   );
@@ -359,4 +432,6 @@ const styles = StyleSheet.create({
   section: { backgroundColor: "#111827", borderRadius: 16, overflow: "hidden", borderWidth: StyleSheet.hairlineWidth, borderColor: "#1f2937", marginBottom: 16 },
   badge: { backgroundColor: "#0ea5e9", borderRadius: 999, paddingHorizontal: 6, paddingVertical: 2 },
   badgeText: { color: "black", fontWeight: "700", fontSize: 12 },
+  playingIndicator: { backgroundColor: "#ef4444", borderRadius: 4, paddingHorizontal: 8, paddingVertical: 2, marginLeft: 8 },
+  playingText: { color: "white", fontWeight: "700", fontSize: 10 },
 });

@@ -2,28 +2,48 @@ const http = require('http');
 
 const PORT = 5174;
 const ITEMS_PER_PAGE = 10;
-const TOTAL_ITEMS = 50;
+const TOTAL_ITEMS = 60;
 
-// Generate mock data
+// Direct MP4 video URLs (public domain / sample videos)
+const CAT_VIDEOS = [
+  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
+  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
+  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4',
+  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4',
+];
+
+// Generate mock data - now with 4 kinds including video
 const sections = [];
-const kinds = ['hero', 'card', 'quote'];
+const kinds = ['hero', 'card', 'quote', 'video'];
 for (let i = 0; i < TOTAL_ITEMS; i++) {
   sections.push({
-    kind: kinds[i % 3],
+    kind: kinds[i % 4],
     index: i
   });
 }
 
 const sectionDetails = {};
 for (let i = 0; i < TOTAL_ITEMS; i++) {
-  const kind = kinds[i % 3];
-  sectionDetails[`${kind}:${i}`] = {
+  const kind = kinds[i % 4];
+  const baseData = {
     kind,
     index: i,
     title: `${kind.charAt(0).toUpperCase() + kind.slice(1)} Item ${i}`,
     text: `This is the description for ${kind} item number ${i}. Lorem ipsum dolor sit amet.`,
     image: `https://picsum.photos/seed/${i}/400/300`
   };
+
+  // Add video URL for video items
+  if (kind === 'video') {
+    const videoIndex = Math.floor(i / 4) % CAT_VIDEOS.length;
+    baseData.videoUrl = CAT_VIDEOS[videoIndex];
+    baseData.title = `Sample Video ${Math.floor(i / 4) + 1}`;
+    baseData.text = `Auto-plays when scrolled into view, pauses when scrolled away.`;
+  }
+
+  sectionDetails[`${kind}:${i}`] = baseData;
 }
 
 function handleRequest(req, res) {
@@ -94,4 +114,5 @@ server.listen(PORT, '0.0.0.0', () => {
   console.log('\nEndpoints:');
   console.log(`  GET /api/sections?page=0  - Get paginated sections`);
   console.log(`  GET /api/section?kind=hero&index=0  - Get section details`);
+  console.log(`  GET /api/section?kind=video&index=3  - Get video with videoUrl`);
 });
