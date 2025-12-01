@@ -2,6 +2,10 @@
 
 Shares the same API contract as the web app.
 
+![App Screenshot](images/screenshot.png)
+
+*Screenshot showing the infinite scroll feed with animated Hero, Quote, and Card components. Each component animates into view as you scroll - images slide in from the left, quotes type out character-by-character, badges pop in with counting animations, and hero cards pulse with a cyan glow effect.*
+
 ## Prereqs
 - Node >= 18
 - Expo CLI (`npm i -g expo` or use `npx expo`)
